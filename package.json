@@ -1,0 +1,10 @@
+{
+  "name": "jiraformer",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "node --env-file=.env src/jiraformer.mjs",
+    "verify": "node --env-file=.env src/verify.mjs"
+  }
+}
