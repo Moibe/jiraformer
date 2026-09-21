@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { page } from '$app/state';
+
 	let collapsed = $state(false);
 	let sidebarEl: HTMLElement | undefined = $state();
 	let tiltX = $state(0);
@@ -56,7 +58,7 @@
 		</div>
 
 		<nav>
-			<a href="/" class="nav-item active">
+			<a href="/" class="nav-item" class:active={page.url.pathname === '/'}>
 				<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
 					<path
 						stroke-linecap="round"
@@ -65,6 +67,16 @@
 					/>
 				</svg>
 				<span>Generar texto</span>
+			</a>
+			<a href="/tareas" class="nav-item" class:active={page.url.pathname === '/tareas'}>
+				<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+					<path
+						stroke-linecap="round"
+						stroke-linejoin="round"
+						d="M9 6h11M9 12h11M9 18h11M4 6h.01M4 12h.01M4 18h.01"
+					/>
+				</svg>
+				<span>Tareas</span>
 			</a>
 		</nav>
 	</aside>
