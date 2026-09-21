@@ -7,6 +7,7 @@
 		project: string;
 		type: string;
 		updated: string;
+		hasSubtasks: boolean;
 	};
 
 	type PanelSubtask = { key: string; summary: string };
@@ -17,6 +18,7 @@
 	let site = $state('');
 	let selectedProject = $state<string | null>(null);
 	let selectedStatus = $state<string | null>(null);
+	let selectedSubtasks = $state<'con' | 'sin' | null>(null);
 
 	let selectedTask = $state<Task | null>(null);
 	let panelLoading = $state(false);
@@ -35,9 +37,12 @@
 		tasks.filter(
 			(t) =>
 				(!selectedProject || t.project === selectedProject) &&
-				(!selectedStatus || t.status === selectedStatus)
+				(!selectedStatus || t.status === selectedStatus) &&
+				(!selectedSubtasks ||
+					(selectedSubtasks === 'con' ? t.hasSubtasks : !t.hasSubtasks))
 		)
 	);
+	let withSubtasksCount = $derived(tasks.filter((t) => t.hasSubtasks).length);
 
 	async function load() {
 		loading = true;
@@ -148,6 +153,15 @@
 								{status} ({tasks.filter((t) => t.status === status).length})
 							</option>
 						{/each}
+					</select>
+				</div>
+
+				<div class="filter-field">
+					<label for="filter-subtasks">Subtareas</label>
+					<select id="filter-subtasks" bind:value={selectedSubtasks}>
+						<option value={null}>Todos ({tasks.length})</option>
+						<option value="con">Con subtareas ({withSubtasksCount})</option>
+						<option value="sin">Sin subtareas ({tasks.length - withSubtasksCount})</option>
 					</select>
 				</div>
 			</div>

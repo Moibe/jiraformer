@@ -14,6 +14,7 @@ type JiraIssue = {
 		project: { name: string };
 		issuetype: { name: string };
 		updated: string;
+		subtasks?: unknown[];
 	};
 };
 
@@ -28,7 +29,7 @@ export const GET: RequestHandler = async () => {
 		body: JSON.stringify({
 			jql: 'assignee = currentUser() ORDER BY updated DESC',
 			maxResults: 50,
-			fields: ['summary', 'status', 'project', 'issuetype', 'updated']
+			fields: ['summary', 'status', 'project', 'issuetype', 'updated', 'subtasks']
 		})
 	});
 
@@ -51,7 +52,8 @@ export const GET: RequestHandler = async () => {
 			statusCategory: issue.fields.status?.statusCategory?.key ?? 'new',
 			project: issue.fields.project?.name ?? '',
 			type: issue.fields.issuetype?.name ?? '',
-			updated: issue.fields.updated
+			updated: issue.fields.updated,
+			hasSubtasks: (issue.fields.subtasks?.length ?? 0) > 0
 		}))
 	});
 };
