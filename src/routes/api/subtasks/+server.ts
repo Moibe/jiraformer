@@ -1,5 +1,7 @@
 import { json } from '@sveltejs/kit';
 import { JIRA_EMAIL, JIRA_API_TOKEN } from '$env/static/private';
+import { db } from '$lib/server/db';
+import { generations } from '$lib/server/db/schema';
 import type { RequestHandler } from './$types';
 
 function authHeader() {
@@ -66,6 +68,11 @@ export const POST: RequestHandler = async ({ request }) => {
 
 	const issue = await res.json();
 	const subtasks: Subtask[] = issue.fields?.subtasks ?? [];
+	const text = formatSubtasks(subtasks);
 
-	return json({ issueKey, text: formatSubtasks(subtasks) });
+	if (text) {
+		db.insert(generations).values({ issueKey, url, text }).run();
+	}
+
+	return json({ issueKey, text });
 };

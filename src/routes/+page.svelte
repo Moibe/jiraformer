@@ -1,9 +1,23 @@
 <script lang="ts">
+	type HistoryRow = { id: number; issueKey: string; url: string; text: string; createdAt: string };
+
 	let url = $state('');
 	let loading = $state(false);
 	let error = $state('');
 	let result = $state('');
 	let copied = $state(false);
+	let history = $state<HistoryRow[]>([]);
+
+	async function cargarHistorial() {
+		const res = await fetch('/api/history');
+		if (!res.ok) return;
+		const data = await res.json();
+		history = data.history;
+	}
+
+	$effect(() => {
+		cargarHistorial();
+	});
 
 	async function generar() {
 		error = '';
@@ -28,6 +42,7 @@
 				error = `${data.issueKey} no tiene subtareas.`;
 			} else {
 				result = data.text;
+				cargarHistorial();
 			}
 		} catch (e) {
 			error = e instanceof Error ? e.message : 'Error desconocido.';
@@ -41,6 +56,22 @@
 		await navigator.clipboard.writeText(result);
 		copied = true;
 		setTimeout(() => (copied = false), 2000);
+	}
+
+	function verHistorial(row: HistoryRow) {
+		url = row.url;
+		result = row.text;
+		error = '';
+		copied = false;
+	}
+
+	function formatFecha(iso: string) {
+		return new Date(iso).toLocaleString('es-MX', {
+			day: 'numeric',
+			month: 'short',
+			hour: '2-digit',
+			minute: '2-digit'
+		});
 	}
 </script>
 
@@ -82,6 +113,22 @@
 		</div>
 	{/if}
 </div>
+
+{#if history.length > 0}
+	<div class="card history-card">
+		<h2>Historial reciente</h2>
+		<ul class="history-list">
+			{#each history as row (row.id)}
+				<li>
+					<button class="history-row" onclick={() => verHistorial(row)}>
+						<span class="key">{row.issueKey}</span>
+						<span class="date">{formatFecha(row.createdAt)}</span>
+					</button>
+				</li>
+			{/each}
+		</ul>
+	</div>
+{/if}
 
 <style>
 	.card {
@@ -197,5 +244,55 @@
 
 	.btn-secondary:hover {
 		opacity: 0.9;
+	}
+
+	.history-card {
+		max-width: 42rem;
+		margin-top: 1.25rem;
+		padding: 1.25rem 1.5rem;
+	}
+
+	.history-card h2 {
+		font-size: 0.85rem;
+		font-weight: 600;
+		color: var(--muted-foreground);
+		text-transform: uppercase;
+		letter-spacing: 0.02em;
+		margin: 0 0 0.75rem;
+	}
+
+	.history-list {
+		list-style: none;
+		margin: 0;
+		padding: 0;
+		display: flex;
+		flex-direction: column;
+		gap: 0.25rem;
+	}
+
+	.history-row {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		width: 100%;
+		padding: 0.5rem 0.6rem;
+		border-radius: 8px;
+		font-size: 0.85rem;
+		color: var(--foreground);
+		transition: background 0.15s ease;
+	}
+
+	.history-row:hover {
+		background: var(--muted);
+	}
+
+	.history-row .key {
+		font-weight: 700;
+		color: var(--primary);
+	}
+
+	.history-row .date {
+		color: var(--muted-foreground);
+		font-size: 0.78rem;
 	}
 </style>

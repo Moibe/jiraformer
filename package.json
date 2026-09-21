@@ -11,14 +11,20 @@
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
 		"start": "node --env-file=.env src/jiraformer.mjs",
-		"verify": "node --env-file=.env src/verify.mjs"
+		"verify": "node --env-file=.env src/verify.mjs",
+		"db:generate": "drizzle-kit generate",
+		"db:migrate": "node --env-file=.env scripts/migrate.mjs",
+		"db:push": "drizzle-kit push",
+		"db:studio": "drizzle-kit studio"
 	},
 	"devDependencies": {
 		"@sveltejs/adapter-auto": "^7.0.1",
 		"@sveltejs/kit": "^2.63.0",
 		"@sveltejs/vite-plugin-svelte": "^7.1.2",
 		"@tailwindcss/vite": "^4.3.3",
+		"@types/better-sqlite3": "^9.6.0",
 		"@types/node": "^26.6.2",
+		"drizzle-kit": "^0.31.11",
 		"svelte": "^5.56.1",
 		"svelte-check": "^4.6.0",
 		"tailwindcss": "^4.3.3",
@@ -26,7 +32,9 @@
 		"vite": "^8.0.16"
 	},
 	"dependencies": {
+		"better-sqlite3": "^13.0.3",
 		"clsx": "^2.1.1",
+		"drizzle-orm": "^0.45.3",
 		"tailwind-merge": "^3.7.0"
 	}
 }
