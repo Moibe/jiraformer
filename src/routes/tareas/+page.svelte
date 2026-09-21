@@ -9,12 +9,21 @@
 		updated: string;
 	};
 
+	type PanelSubtask = { key: string; summary: string };
+
 	let loading = $state(true);
 	let error = $state('');
 	let tasks = $state<Task[]>([]);
 	let site = $state('');
 	let selectedProject = $state<string | null>(null);
 	let selectedStatus = $state<string | null>(null);
+
+	let selectedTask = $state<Task | null>(null);
+	let panelLoading = $state(false);
+	let panelError = $state('');
+	let panelSubtasks = $state<PanelSubtask[]>([]);
+	let panelText = $state('');
+	let panelCopied = $state(false);
 
 	let projects = $derived(
 		[...new Set(tasks.map((t) => t.project))].sort((a, b) => a.localeCompare(b))
@@ -65,84 +74,176 @@
 	function formatDate(iso: string) {
 		return new Date(iso).toLocaleDateString('es-MX', { day: 'numeric', month: 'short' });
 	}
+
+	async function seleccionar(task: Task) {
+		selectedTask = task;
+		panelCopied = false;
+		panelLoading = true;
+		panelError = '';
+		panelSubtasks = [];
+		panelText = '';
+		try {
+			const res = await fetch(`/api/tasks/${task.key}/subtasks`);
+			const data = await res.json();
+			if (!res.ok) throw new Error(data.error ?? 'Error desconocido.');
+			panelSubtasks = data.subtasks;
+			panelText = data.text;
+		} catch (e) {
+			panelError = e instanceof Error ? e.message : 'Error desconocido.';
+		} finally {
+			panelLoading = false;
+		}
+	}
+
+	async function copiarPanel() {
+		if (!panelText) return;
+		await navigator.clipboard.writeText(panelText);
+		panelCopied = true;
+		setTimeout(() => (panelCopied = false), 2000);
+	}
 </script>
 
 <svelte:head>
 	<title>Jiraformer · Tareas</title>
 </svelte:head>
 
-<div class="card">
-	<div class="header-row">
-		<div>
-			<h1>Mis tareas</h1>
-			<p class="subtitle">Todo lo asignado a ti en Jira, más reciente primero.</p>
+<div class="layout">
+	<div class="card list-card">
+		<div class="header-row">
+			<div>
+				<h1>Mis tareas</h1>
+				<p class="subtitle">Todo lo asignado a ti en Jira, más reciente primero.</p>
+			</div>
+			<button class="btn-secondary" onclick={load} disabled={loading}>
+				{loading ? 'Cargando…' : 'Refrescar'}
+			</button>
 		</div>
-		<button class="btn-secondary" onclick={load} disabled={loading}>
-			{loading ? 'Cargando…' : 'Refrescar'}
-		</button>
+
+		{#if error}
+			<p class="error">{error}</p>
+		{:else if loading}
+			<p class="muted">Cargando tareas…</p>
+		{:else if tasks.length === 0}
+			<p class="muted">No tienes tareas asignadas.</p>
+		{:else}
+			<div class="filters">
+				<div class="filter-field">
+					<label for="filter-project">Proyecto</label>
+					<select id="filter-project" bind:value={selectedProject}>
+						<option value={null}>Todos ({tasks.length})</option>
+						{#each projects as project (project)}
+							<option value={project}>
+								{project} ({tasks.filter((t) => t.project === project).length})
+							</option>
+						{/each}
+					</select>
+				</div>
+
+				<div class="filter-field">
+					<label for="filter-status">Estado</label>
+					<select id="filter-status" bind:value={selectedStatus}>
+						<option value={null}>Todos ({tasks.length})</option>
+						{#each statuses as status (status)}
+							<option value={status}>
+								{status} ({tasks.filter((t) => t.status === status).length})
+							</option>
+						{/each}
+					</select>
+				</div>
+			</div>
+
+			{#if filteredTasks.length === 0}
+				<p class="muted">No hay tareas con ese filtro.</p>
+			{/if}
+
+			<ul class="task-list">
+				{#each filteredTasks as task (task.key)}
+					<li>
+						<button
+							class="task-row"
+							class:selected={selectedTask?.key === task.key}
+							onclick={() => seleccionar(task)}
+						>
+							<span class="key">{task.key}</span>
+							<span class="summary">{task.summary}</span>
+							<span class="status {statusClass(task.statusCategory)}">{task.status}</span>
+							<span class="meta">{task.project} · {formatDate(task.updated)}</span>
+						</button>
+					</li>
+				{/each}
+			</ul>
+		{/if}
 	</div>
 
-	{#if error}
-		<p class="error">{error}</p>
-	{:else if loading}
-		<p class="muted">Cargando tareas…</p>
-	{:else if tasks.length === 0}
-		<p class="muted">No tienes tareas asignadas.</p>
-	{:else}
-		<div class="filters">
-			<div class="filter-field">
-				<label for="filter-project">Proyecto</label>
-				<select id="filter-project" bind:value={selectedProject}>
-					<option value={null}>Todos ({tasks.length})</option>
-					{#each projects as project (project)}
-						<option value={project}>
-							{project} ({tasks.filter((t) => t.project === project).length})
-						</option>
-					{/each}
-				</select>
+	<div class="card panel-card">
+		{#if !selectedTask}
+			<p class="muted">Selecciona una tarea para ver sus subtareas.</p>
+		{:else}
+			<div class="panel-header">
+				<div>
+					<span class="panel-key">{selectedTask.key}</span>
+					<h2>{selectedTask.summary}</h2>
+				</div>
+				<a
+					class="btn-secondary"
+					href="https://{site}/browse/{selectedTask.key}"
+					target="_blank"
+					rel="noopener"
+				>
+					Abrir en Jira
+				</a>
 			</div>
 
-			<div class="filter-field">
-				<label for="filter-status">Estado</label>
-				<select id="filter-status" bind:value={selectedStatus}>
-					<option value={null}>Todos ({tasks.length})</option>
-					{#each statuses as status (status)}
-						<option value={status}>
-							{status} ({tasks.filter((t) => t.status === status).length})
-						</option>
+			{#if panelLoading}
+				<p class="muted">Cargando subtareas…</p>
+			{:else if panelError}
+				<p class="error">{panelError}</p>
+			{:else if panelSubtasks.length === 0}
+				<p class="muted">Esta tarea no tiene subtareas.</p>
+			{:else}
+				<ul class="subtask-list">
+					{#each panelSubtasks as st (st.key)}
+						<li>
+							<span class="key">{st.key}</span>
+							<span class="summary">{st.summary}</span>
+						</li>
 					{/each}
-				</select>
-			</div>
-		</div>
-
-		{#if filteredTasks.length === 0}
-			<p class="muted">No hay tareas con ese filtro.</p>
+				</ul>
+				<button class="btn-primary" onclick={copiarPanel}>
+					{panelCopied ? 'Copiado ✓' : 'Copiar como texto'}
+				</button>
+			{/if}
 		{/if}
-
-		<ul class="task-list">
-			{#each filteredTasks as task (task.key)}
-				<li>
-					<a href="https://{site}/browse/{task.key}" target="_blank" rel="noopener">
-						<span class="key">{task.key}</span>
-						<span class="summary">{task.summary}</span>
-						<span class="status {statusClass(task.statusCategory)}">{task.status}</span>
-						<span class="meta">{task.project} · {formatDate(task.updated)}</span>
-					</a>
-				</li>
-			{/each}
-		</ul>
-	{/if}
+	</div>
 </div>
 
 <style>
+	.layout {
+		display: flex;
+		align-items: flex-start;
+		gap: 1.25rem;
+		flex-wrap: wrap;
+	}
+
 	.card {
-		max-width: 46rem;
 		background: var(--card);
 		color: var(--card-foreground);
 		border: 1px solid var(--border);
 		border-radius: 12px;
 		box-shadow: 0 1px 3px rgba(23, 43, 77, 0.08);
 		padding: 2rem;
+	}
+
+	.list-card {
+		flex: 1 1 32rem;
+		max-width: 42rem;
+	}
+
+	.panel-card {
+		flex: 1 1 20rem;
+		max-width: 24rem;
+		position: sticky;
+		top: 2.5rem;
 	}
 
 	.header-row {
@@ -173,6 +274,20 @@
 	.error {
 		color: var(--destructive);
 		font-size: 0.9rem;
+	}
+
+	.btn-primary {
+		background: var(--primary);
+		color: var(--primary-foreground);
+		border-radius: 8px;
+		padding: 0.5rem 1rem;
+		font-size: 0.85rem;
+		font-weight: 600;
+		transition: opacity 0.15s ease;
+	}
+
+	.btn-primary:hover {
+		opacity: 0.9;
 	}
 
 	.btn-secondary {
@@ -244,22 +359,30 @@
 		gap: 0.5rem;
 	}
 
-	.task-list a {
+	.task-row {
 		display: grid;
 		grid-template-columns: 5rem 1fr auto;
 		align-items: center;
 		gap: 0.25rem 0.75rem;
+		width: 100%;
 		padding: 0.75rem 0.9rem;
 		border: 1px solid var(--border);
 		border-radius: 8px;
+		text-align: left;
 		transition:
 			border-color 0.15s ease,
-			background 0.15s ease;
+			background 0.15s ease,
+			box-shadow 0.15s ease;
 	}
 
-	.task-list a:hover {
+	.task-row:hover {
 		border-color: var(--primary);
 		background: var(--muted);
+	}
+
+	.task-row.selected {
+		border-color: var(--primary);
+		box-shadow: 0 0 0 1px var(--primary);
 	}
 
 	.key {
@@ -304,5 +427,60 @@
 		grid-column: 2 / span 2;
 		font-size: 0.78rem;
 		color: var(--muted-foreground);
+	}
+
+	.panel-header {
+		display: flex;
+		align-items: flex-start;
+		justify-content: space-between;
+		gap: 0.75rem;
+		margin-bottom: 1.25rem;
+		padding-bottom: 1rem;
+		border-bottom: 1px solid var(--border);
+	}
+
+	.panel-key {
+		display: block;
+		font-size: 0.75rem;
+		font-weight: 700;
+		color: var(--primary);
+		margin-bottom: 0.2rem;
+	}
+
+	.panel-header h2 {
+		font-size: 1rem;
+		font-weight: 600;
+		margin: 0;
+	}
+
+	.subtask-list {
+		list-style: none;
+		margin: 0 0 1rem;
+		padding: 0;
+		display: flex;
+		flex-direction: column;
+		gap: 0.6rem;
+	}
+
+	.subtask-list li {
+		display: flex;
+		flex-direction: column;
+		gap: 0.15rem;
+		padding-bottom: 0.6rem;
+		border-bottom: 1px solid var(--border);
+	}
+
+	.subtask-list li:last-child {
+		border-bottom: none;
+	}
+
+	.subtask-list .key {
+		font-size: 0.72rem;
+	}
+
+	.subtask-list .summary {
+		font-size: 0.85rem;
+		font-weight: 500;
+		color: var(--foreground);
 	}
 </style>
