@@ -13,6 +13,14 @@
 	let error = $state('');
 	let tasks = $state<Task[]>([]);
 	let site = $state('');
+	let selectedProject = $state<string | null>(null);
+
+	let projects = $derived(
+		[...new Set(tasks.map((t) => t.project))].sort((a, b) => a.localeCompare(b))
+	);
+	let filteredTasks = $derived(
+		selectedProject ? tasks.filter((t) => t.project === selectedProject) : tasks
+	);
 
 	async function load() {
 		loading = true;
@@ -23,6 +31,9 @@
 			if (!res.ok) throw new Error(data.error ?? 'Error desconocido.');
 			tasks = data.tasks;
 			site = data.site;
+			if (selectedProject && !tasks.some((t) => t.project === selectedProject)) {
+				selectedProject = null;
+			}
 		} catch (e) {
 			error = e instanceof Error ? e.message : 'Error desconocido.';
 		} finally {
@@ -67,8 +78,30 @@
 	{:else if tasks.length === 0}
 		<p class="muted">No tienes tareas asignadas.</p>
 	{:else}
+		{#if projects.length > 1}
+			<div class="filters">
+				<button class="filter-chip" class:active={selectedProject === null} onclick={() => (selectedProject = null)}>
+					Todos <span class="count">{tasks.length}</span>
+				</button>
+				{#each projects as project (project)}
+					<button
+						class="filter-chip"
+						class:active={selectedProject === project}
+						onclick={() => (selectedProject = project)}
+					>
+						{project}
+						<span class="count">{tasks.filter((t) => t.project === project).length}</span>
+					</button>
+				{/each}
+			</div>
+		{/if}
+
+		{#if filteredTasks.length === 0}
+			<p class="muted">No hay tareas de "{selectedProject}".</p>
+		{/if}
+
 		<ul class="task-list">
-			{#each tasks as task (task.key)}
+			{#each filteredTasks as task (task.key)}
 				<li>
 					<a href="https://{site}/browse/{task.key}" target="_blank" rel="noopener">
 						<span class="key">{task.key}</span>
@@ -140,6 +173,45 @@
 
 	.btn-secondary:disabled {
 		opacity: 0.6;
+	}
+
+	.filters {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.5rem;
+		margin-bottom: 1.25rem;
+	}
+
+	.filter-chip {
+		display: flex;
+		align-items: center;
+		gap: 0.4rem;
+		padding: 0.4rem 0.75rem;
+		border-radius: 999px;
+		border: 1px solid var(--border);
+		background: var(--card);
+		color: var(--foreground);
+		font-size: 0.8rem;
+		font-weight: 500;
+		transition:
+			border-color 0.15s ease,
+			background 0.15s ease,
+			color 0.15s ease;
+	}
+
+	.filter-chip:hover {
+		border-color: var(--primary);
+	}
+
+	.filter-chip.active {
+		background: var(--primary);
+		border-color: var(--primary);
+		color: var(--primary-foreground);
+	}
+
+	.filter-chip .count {
+		font-size: 0.72rem;
+		opacity: 0.75;
 	}
 
 	.task-list {
