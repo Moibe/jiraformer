@@ -14,12 +14,20 @@
 	let tasks = $state<Task[]>([]);
 	let site = $state('');
 	let selectedProject = $state<string | null>(null);
+	let selectedStatus = $state<string | null>(null);
 
 	let projects = $derived(
 		[...new Set(tasks.map((t) => t.project))].sort((a, b) => a.localeCompare(b))
 	);
+	let statuses = $derived(
+		[...new Set(tasks.map((t) => t.status))].sort((a, b) => a.localeCompare(b))
+	);
 	let filteredTasks = $derived(
-		selectedProject ? tasks.filter((t) => t.project === selectedProject) : tasks
+		tasks.filter(
+			(t) =>
+				(!selectedProject || t.project === selectedProject) &&
+				(!selectedStatus || t.status === selectedStatus)
+		)
 	);
 
 	async function load() {
@@ -33,6 +41,9 @@
 			site = data.site;
 			if (selectedProject && !tasks.some((t) => t.project === selectedProject)) {
 				selectedProject = null;
+			}
+			if (selectedStatus && !tasks.some((t) => t.status === selectedStatus)) {
+				selectedStatus = null;
 			}
 		} catch (e) {
 			error = e instanceof Error ? e.message : 'Error desconocido.';
@@ -78,26 +89,34 @@
 	{:else if tasks.length === 0}
 		<p class="muted">No tienes tareas asignadas.</p>
 	{:else}
-		{#if projects.length > 1}
-			<div class="filters">
-				<button class="filter-chip" class:active={selectedProject === null} onclick={() => (selectedProject = null)}>
-					Todos <span class="count">{tasks.length}</span>
-				</button>
-				{#each projects as project (project)}
-					<button
-						class="filter-chip"
-						class:active={selectedProject === project}
-						onclick={() => (selectedProject = project)}
-					>
-						{project}
-						<span class="count">{tasks.filter((t) => t.project === project).length}</span>
-					</button>
-				{/each}
+		<div class="filters">
+			<div class="filter-field">
+				<label for="filter-project">Proyecto</label>
+				<select id="filter-project" bind:value={selectedProject}>
+					<option value={null}>Todos ({tasks.length})</option>
+					{#each projects as project (project)}
+						<option value={project}>
+							{project} ({tasks.filter((t) => t.project === project).length})
+						</option>
+					{/each}
+				</select>
 			</div>
-		{/if}
+
+			<div class="filter-field">
+				<label for="filter-status">Estado</label>
+				<select id="filter-status" bind:value={selectedStatus}>
+					<option value={null}>Todos ({tasks.length})</option>
+					{#each statuses as status (status)}
+						<option value={status}>
+							{status} ({tasks.filter((t) => t.status === status).length})
+						</option>
+					{/each}
+				</select>
+			</div>
+		</div>
 
 		{#if filteredTasks.length === 0}
-			<p class="muted">No hay tareas de "{selectedProject}".</p>
+			<p class="muted">No hay tareas con ese filtro.</p>
 		{/if}
 
 		<ul class="task-list">
@@ -178,40 +197,42 @@
 	.filters {
 		display: flex;
 		flex-wrap: wrap;
-		gap: 0.5rem;
+		gap: 1rem;
 		margin-bottom: 1.25rem;
 	}
 
-	.filter-chip {
+	.filter-field {
 		display: flex;
-		align-items: center;
-		gap: 0.4rem;
-		padding: 0.4rem 0.75rem;
-		border-radius: 999px;
-		border: 1px solid var(--border);
-		background: var(--card);
-		color: var(--foreground);
-		font-size: 0.8rem;
-		font-weight: 500;
-		transition:
-			border-color 0.15s ease,
-			background 0.15s ease,
-			color 0.15s ease;
+		flex-direction: column;
+		gap: 0.3rem;
 	}
 
-	.filter-chip:hover {
-		border-color: var(--primary);
-	}
-
-	.filter-chip.active {
-		background: var(--primary);
-		border-color: var(--primary);
-		color: var(--primary-foreground);
-	}
-
-	.filter-chip .count {
+	.filter-field label {
 		font-size: 0.72rem;
-		opacity: 0.75;
+		font-weight: 600;
+		color: var(--muted-foreground);
+		text-transform: uppercase;
+		letter-spacing: 0.02em;
+	}
+
+	.filter-field select {
+		border: 1px solid var(--border);
+		border-radius: 8px;
+		padding: 0.45rem 2rem 0.45rem 0.7rem;
+		font-size: 0.85rem;
+		color: var(--foreground);
+		background: var(--card);
+		min-width: 12rem;
+		appearance: none;
+		background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2342526e' stroke-width='2'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+		background-repeat: no-repeat;
+		background-position: right 0.6rem center;
+		background-size: 1rem;
+	}
+
+	.filter-field select:focus {
+		outline: 2px solid var(--ring);
+		outline-offset: 1px;
 	}
 
 	.task-list {
