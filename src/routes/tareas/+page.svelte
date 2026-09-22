@@ -291,7 +291,7 @@
 		flex: 1 1 20rem;
 		max-width: 24rem;
 		position: sticky;
-		top: 2.5rem;
+		top: 6.25rem;
 	}
 
 	.header-row {

@@ -1,7 +1,7 @@
 <script lang="ts">
 	import '../app.css';
 	import favicon from '$lib/assets/favicon.svg';
-	import Sidebar from '$lib/Sidebar.svelte';
+	import TopNav from '$lib/TopNav.svelte';
 
 	let { children } = $props();
 </script>
@@ -10,7 +10,7 @@
 	<link rel="icon" href={favicon} />
 </svelte:head>
 
-<Sidebar />
+<TopNav />
 
 <main>
 	{@render children()}
@@ -19,8 +19,6 @@
 <style>
 	main {
 		min-height: 100vh;
-		margin-left: calc(var(--sidebar-width) + 1.5rem);
-		padding: 2.5rem 2rem;
-		transition: margin-left 0.15s ease;
+		padding: 6.25rem 2rem 2.5rem;
 	}
 </style>

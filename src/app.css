@@ -48,11 +48,10 @@
 	--input: #dfe1e6;
 	--ring: #0052cc;
 
-	/* Sidebar: pink header -> purple epic tag, the two signature Jira brand accents */
+	/* Nav chrome: pink header -> purple epic tag, the two signature Jira brand accents */
 	--sidebar: #de0b80;
 	--sidebar-foreground: #ffffff;
 	--sidebar-border: rgba(255, 255, 255, 0.22);
-	--sidebar-width: 15rem;
 }
 
 body {
