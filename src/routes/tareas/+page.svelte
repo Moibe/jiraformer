@@ -19,6 +19,7 @@
 	let selectedProject = $state<string | null>(null);
 	let selectedStatus = $state<string | null>(null);
 	let selectedSubtasks = $state<'con' | 'sin' | null>(null);
+	let sortOrder = $state<'desc' | 'asc'>('desc');
 
 	let selectedTask = $state<Task | null>(null);
 	let panelLoading = $state(false);
@@ -34,13 +35,18 @@
 		[...new Set(tasks.map((t) => t.status))].sort((a, b) => a.localeCompare(b))
 	);
 	let filteredTasks = $derived(
-		tasks.filter(
-			(t) =>
-				(!selectedProject || t.project === selectedProject) &&
-				(!selectedStatus || t.status === selectedStatus) &&
-				(!selectedSubtasks ||
-					(selectedSubtasks === 'con' ? t.hasSubtasks : !t.hasSubtasks))
-		)
+		tasks
+			.filter(
+				(t) =>
+					(!selectedProject || t.project === selectedProject) &&
+					(!selectedStatus || t.status === selectedStatus) &&
+					(!selectedSubtasks ||
+						(selectedSubtasks === 'con' ? t.hasSubtasks : !t.hasSubtasks))
+			)
+			.sort((a, b) => {
+				const diff = new Date(a.updated).getTime() - new Date(b.updated).getTime();
+				return sortOrder === 'desc' ? -diff : diff;
+			})
 	);
 	let withSubtasksCount = $derived(tasks.filter((t) => t.hasSubtasks).length);
 
@@ -162,6 +168,14 @@
 						<option value={null}>Todos ({tasks.length})</option>
 						<option value="con">Con subtareas ({withSubtasksCount})</option>
 						<option value="sin">Sin subtareas ({tasks.length - withSubtasksCount})</option>
+					</select>
+				</div>
+
+				<div class="filter-field">
+					<label for="filter-sort">Ordenar por fecha</label>
+					<select id="filter-sort" bind:value={sortOrder}>
+						<option value="desc">Más reciente primero</option>
+						<option value="asc">Más antiguo primero</option>
 					</select>
 				</div>
 			</div>
