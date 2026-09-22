@@ -18,30 +18,49 @@ type JiraIssue = {
 	};
 };
 
+const MAX_PAGES = 20; // safety cap: 20 * 100 = 2000 issues
+
+async function fetchAllAssignedIssues(): Promise<JiraIssue[]> {
+	const issues: JiraIssue[] = [];
+	let nextPageToken: string | undefined;
+	let page = 0;
+
+	do {
+		const res = await fetch(`https://${JIRA_SITE}/rest/api/3/search/jql`, {
+			method: 'POST',
+			headers: {
+				Authorization: authHeader(),
+				Accept: 'application/json',
+				'Content-Type': 'application/json'
+			},
+			body: JSON.stringify({
+				jql: 'assignee = currentUser() ORDER BY updated DESC',
+				maxResults: 100,
+				nextPageToken,
+				fields: ['summary', 'status', 'project', 'issuetype', 'updated', 'subtasks']
+			})
+		});
+
+		if (!res.ok) {
+			throw new Error(`Jira respondió ${res.status} ${res.statusText} buscando tus tareas.`);
+		}
+
+		const data = await res.json();
+		issues.push(...(data.issues ?? []));
+		nextPageToken = data.isLast ? undefined : data.nextPageToken;
+		page++;
+	} while (nextPageToken && page < MAX_PAGES);
+
+	return issues;
+}
+
 export const GET: RequestHandler = async () => {
-	const res = await fetch(`https://${JIRA_SITE}/rest/api/3/search/jql`, {
-		method: 'POST',
-		headers: {
-			Authorization: authHeader(),
-			Accept: 'application/json',
-			'Content-Type': 'application/json'
-		},
-		body: JSON.stringify({
-			jql: 'assignee = currentUser() ORDER BY updated DESC',
-			maxResults: 50,
-			fields: ['summary', 'status', 'project', 'issuetype', 'updated', 'subtasks']
-		})
-	});
-
-	if (!res.ok) {
-		return json(
-			{ error: `Jira respondió ${res.status} ${res.statusText} buscando tus tareas.` },
-			{ status: 502 }
-		);
+	let issues: JiraIssue[];
+	try {
+		issues = await fetchAllAssignedIssues();
+	} catch (e) {
+		return json({ error: e instanceof Error ? e.message : 'Error desconocido.' }, { status: 502 });
 	}
-
-	const data = await res.json();
-	const issues: JiraIssue[] = data.issues ?? [];
 
 	return json({
 		site: JIRA_SITE,
