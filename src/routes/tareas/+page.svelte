@@ -138,45 +138,65 @@
 			<p class="muted">No tienes tareas asignadas.</p>
 		{:else}
 			<div class="filters">
-				<div class="filter-field">
-					<label for="filter-project">Proyecto</label>
-					<select id="filter-project" bind:value={selectedProject}>
-						<option value={null}>Todos ({tasks.length})</option>
-						{#each projects as project (project)}
-							<option value={project}>
-								{project} ({tasks.filter((t) => t.project === project).length})
-							</option>
-						{/each}
-					</select>
+				<div class="filter-group filter-group-filters">
+					<span class="group-label">
+						<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+							<path stroke-linecap="round" stroke-linejoin="round" d="M4 5h16M7 12h10M10 19h4" />
+						</svg>
+						Filtros
+					</span>
+					<div class="group-row">
+						<div class="filter-field">
+							<label for="filter-project">Proyecto</label>
+							<select id="filter-project" bind:value={selectedProject}>
+								<option value={null}>Todos ({tasks.length})</option>
+								{#each projects as project (project)}
+									<option value={project}>
+										{project} ({tasks.filter((t) => t.project === project).length})
+									</option>
+								{/each}
+							</select>
+						</div>
+
+						<div class="filter-field">
+							<label for="filter-status">Estado</label>
+							<select id="filter-status" bind:value={selectedStatus}>
+								<option value={null}>Todos ({tasks.length})</option>
+								{#each statuses as status (status)}
+									<option value={status}>
+										{status} ({tasks.filter((t) => t.status === status).length})
+									</option>
+								{/each}
+							</select>
+						</div>
+
+						<div class="filter-field">
+							<label for="filter-subtasks">Subtareas</label>
+							<select id="filter-subtasks" bind:value={selectedSubtasks}>
+								<option value={null}>Todos ({tasks.length})</option>
+								<option value="con">Con subtareas ({withSubtasksCount})</option>
+								<option value="sin">Sin subtareas ({tasks.length - withSubtasksCount})</option>
+							</select>
+						</div>
+					</div>
 				</div>
 
-				<div class="filter-field">
-					<label for="filter-status">Estado</label>
-					<select id="filter-status" bind:value={selectedStatus}>
-						<option value={null}>Todos ({tasks.length})</option>
-						{#each statuses as status (status)}
-							<option value={status}>
-								{status} ({tasks.filter((t) => t.status === status).length})
-							</option>
-						{/each}
-					</select>
-				</div>
-
-				<div class="filter-field">
-					<label for="filter-subtasks">Subtareas</label>
-					<select id="filter-subtasks" bind:value={selectedSubtasks}>
-						<option value={null}>Todos ({tasks.length})</option>
-						<option value="con">Con subtareas ({withSubtasksCount})</option>
-						<option value="sin">Sin subtareas ({tasks.length - withSubtasksCount})</option>
-					</select>
-				</div>
-
-				<div class="filter-field">
-					<label for="filter-sort">Ordenar por fecha</label>
-					<select id="filter-sort" bind:value={sortOrder}>
-						<option value="desc">Más reciente primero</option>
-						<option value="asc">Más antiguo primero</option>
-					</select>
+				<div class="filter-group filter-group-sort">
+					<span class="group-label">
+						<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+							<path stroke-linecap="round" stroke-linejoin="round" d="M3 7h11M3 12h7M3 17h4M17 4v16m0 0l-3.5-3.5M17 20l3.5-3.5" />
+						</svg>
+						Orden
+					</span>
+					<div class="group-row">
+						<div class="filter-field">
+							<label for="filter-sort">Fecha</label>
+							<select id="filter-sort" bind:value={sortOrder}>
+								<option value="desc">Más reciente primero</option>
+								<option value="asc">Más antiguo primero</option>
+							</select>
+						</div>
+					</div>
 				</div>
 			</div>
 
@@ -340,8 +360,57 @@
 	.filters {
 		display: flex;
 		flex-wrap: wrap;
-		gap: 1rem;
+		align-items: flex-start;
+		gap: 1.25rem;
 		margin-bottom: 1.25rem;
+	}
+
+	.filter-group {
+		display: flex;
+		flex-direction: column;
+		gap: 0.5rem;
+		padding: 0.75rem 1rem 0.85rem;
+		border-radius: 10px;
+		border-left: 3px solid transparent;
+	}
+
+	.filter-group-filters {
+		background: color-mix(in srgb, var(--primary) 6%, transparent);
+		border-left-color: var(--primary);
+	}
+
+	.filter-group-sort {
+		background: color-mix(in srgb, var(--accent) 8%, transparent);
+		border-left-color: var(--accent);
+	}
+
+	.group-label {
+		display: flex;
+		align-items: center;
+		gap: 0.35rem;
+		font-size: 0.7rem;
+		font-weight: 700;
+		text-transform: uppercase;
+		letter-spacing: 0.04em;
+	}
+
+	.filter-group-filters .group-label {
+		color: var(--primary);
+	}
+
+	.filter-group-sort .group-label {
+		color: var(--accent);
+	}
+
+	.group-label svg {
+		width: 0.85rem;
+		height: 0.85rem;
+	}
+
+	.group-row {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 1rem;
 	}
 
 	.filter-field {
