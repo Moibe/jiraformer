@@ -21,6 +21,8 @@
 	let selectedSubtasks = $state<'con' | 'sin' | null>(null);
 	let sortOrder = $state<'desc' | 'asc'>('desc');
 
+	let flags = $state<Record<string, boolean>>({});
+
 	let selectedTask = $state<Task | null>(null);
 	let panelLoading = $state(false);
 	let panelError = $state('');
@@ -55,11 +57,17 @@
 		loading = true;
 		error = '';
 		try {
-			const res = await fetch('/api/tasks');
-			const data = await res.json();
-			if (!res.ok) throw new Error(data.error ?? 'Error desconocido.');
+			const [tasksRes, flagsRes] = await Promise.all([
+				fetch('/api/tasks'),
+				fetch('/api/tasks/flags')
+			]);
+			const data = await tasksRes.json();
+			if (!tasksRes.ok) throw new Error(data.error ?? 'Error desconocido.');
 			tasks = data.tasks;
 			site = data.site;
+			if (flagsRes.ok) {
+				flags = (await flagsRes.json()).flags;
+			}
 			if (selectedProject && !tasks.some((t) => t.project === selectedProject)) {
 				selectedProject = null;
 			}
@@ -70,6 +78,20 @@
 			error = e instanceof Error ? e.message : 'Error desconocido.';
 		} finally {
 			loading = false;
+		}
+	}
+
+	async function toggleFlag(issueKey: string, checked: boolean) {
+		flags = { ...flags, [issueKey]: checked };
+		try {
+			const res = await fetch('/api/tasks/flags', {
+				method: 'PUT',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({ issueKey, sentToUsercare: checked })
+			});
+			if (!res.ok) throw new Error();
+		} catch {
+			flags = { ...flags, [issueKey]: !checked };
 		}
 	}
 
@@ -211,7 +233,15 @@
 
 			<ul class="task-list">
 				{#each filteredTasks as task (task.key)}
-					<li>
+					<li class="task-item">
+						<input
+							type="checkbox"
+							class="usercare-check"
+							title="¿Subida a Usercare?"
+							checked={flags[task.key] ?? false}
+							onclick={(e) => e.stopPropagation()}
+							onchange={(e) => toggleFlag(task.key, e.currentTarget.checked)}
+						/>
 						<button
 							class="task-row"
 							class:selected={selectedTask?.key === task.key}
@@ -466,12 +496,27 @@
 		gap: 0.5rem;
 	}
 
+	.task-item {
+		display: flex;
+		align-items: center;
+		gap: 0.6rem;
+	}
+
+	.usercare-check {
+		flex-shrink: 0;
+		width: 1.05rem;
+		height: 1.05rem;
+		accent-color: var(--primary);
+		cursor: pointer;
+	}
+
 	.task-row {
 		display: grid;
 		grid-template-columns: 5rem 1fr auto;
 		align-items: center;
 		gap: 0.25rem 0.75rem;
-		width: 100%;
+		flex: 1;
+		min-width: 0;
 		padding: 0.75rem 0.9rem;
 		border: 1px solid var(--border);
 		border-radius: 8px;

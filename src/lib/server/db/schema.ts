@@ -9,3 +9,11 @@ export const generations = sqliteTable('generations', {
 		.notNull()
 		.$defaultFn(() => new Date())
 });
+
+export const taskFlags = sqliteTable('task_flags', {
+	issueKey: text('issue_key').primaryKey(),
+	sentToUsercare: integer('sent_to_usercare', { mode: 'boolean' }).notNull().default(false),
+	updatedAt: integer('updated_at', { mode: 'timestamp' })
+		.notNull()
+		.$defaultFn(() => new Date())
+});

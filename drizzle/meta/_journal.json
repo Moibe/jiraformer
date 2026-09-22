@@ -8,6 +8,13 @@
       "when": 1790021026105,
       "tag": "0000_chemical_jack_murdock",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1790117387063,
+      "tag": "0001_legal_otto_octavius",
+      "breakpoints": true
     }
   ]
 }
