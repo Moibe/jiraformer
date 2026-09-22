@@ -49,6 +49,7 @@
 			})
 	);
 	let withSubtasksCount = $derived(tasks.filter((t) => t.hasSubtasks).length);
+	let showFilters = $derived(!loading && !error && tasks.length > 0);
 
 	async function load() {
 		loading = true;
@@ -118,6 +119,73 @@
 	<title>Jiraformer · Tareas</title>
 </svelte:head>
 
+{#if showFilters}
+	<div class="card filters-card">
+		<div class="filters">
+			<div class="filter-group filter-group-filters">
+				<span class="group-label">
+					<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+						<path stroke-linecap="round" stroke-linejoin="round" d="M4 5h16M7 12h10M10 19h4" />
+					</svg>
+					Filtros
+				</span>
+				<div class="group-row">
+					<div class="filter-field">
+						<label for="filter-project">Proyecto</label>
+						<select id="filter-project" bind:value={selectedProject}>
+							<option value={null}>Todos ({tasks.length})</option>
+							{#each projects as project (project)}
+								<option value={project}>
+									{project} ({tasks.filter((t) => t.project === project).length})
+								</option>
+							{/each}
+						</select>
+					</div>
+
+					<div class="filter-field">
+						<label for="filter-status">Estado</label>
+						<select id="filter-status" bind:value={selectedStatus}>
+							<option value={null}>Todos ({tasks.length})</option>
+							{#each statuses as status (status)}
+								<option value={status}>
+									{status} ({tasks.filter((t) => t.status === status).length})
+								</option>
+							{/each}
+						</select>
+					</div>
+
+					<div class="filter-field">
+						<label for="filter-subtasks">Subtareas</label>
+						<select id="filter-subtasks" bind:value={selectedSubtasks}>
+							<option value={null}>Todos ({tasks.length})</option>
+							<option value="con">Con subtareas ({withSubtasksCount})</option>
+							<option value="sin">Sin subtareas ({tasks.length - withSubtasksCount})</option>
+						</select>
+					</div>
+				</div>
+			</div>
+
+			<div class="filter-group filter-group-sort">
+				<span class="group-label">
+					<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+						<path stroke-linecap="round" stroke-linejoin="round" d="M3 7h11M3 12h7M3 17h4M17 4v16m0 0l-3.5-3.5M17 20l3.5-3.5" />
+					</svg>
+					Orden
+				</span>
+				<div class="group-row">
+					<div class="filter-field">
+						<label for="filter-sort">Fecha</label>
+						<select id="filter-sort" bind:value={sortOrder}>
+							<option value="desc">Más reciente primero</option>
+							<option value="asc">Más antiguo primero</option>
+						</select>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+{/if}
+
 <div class="layout">
 	<div class="card list-card">
 		<div class="header-row">
@@ -137,69 +205,6 @@
 		{:else if tasks.length === 0}
 			<p class="muted">No tienes tareas asignadas.</p>
 		{:else}
-			<div class="filters">
-				<div class="filter-group filter-group-filters">
-					<span class="group-label">
-						<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-							<path stroke-linecap="round" stroke-linejoin="round" d="M4 5h16M7 12h10M10 19h4" />
-						</svg>
-						Filtros
-					</span>
-					<div class="group-row">
-						<div class="filter-field">
-							<label for="filter-project">Proyecto</label>
-							<select id="filter-project" bind:value={selectedProject}>
-								<option value={null}>Todos ({tasks.length})</option>
-								{#each projects as project (project)}
-									<option value={project}>
-										{project} ({tasks.filter((t) => t.project === project).length})
-									</option>
-								{/each}
-							</select>
-						</div>
-
-						<div class="filter-field">
-							<label for="filter-status">Estado</label>
-							<select id="filter-status" bind:value={selectedStatus}>
-								<option value={null}>Todos ({tasks.length})</option>
-								{#each statuses as status (status)}
-									<option value={status}>
-										{status} ({tasks.filter((t) => t.status === status).length})
-									</option>
-								{/each}
-							</select>
-						</div>
-
-						<div class="filter-field">
-							<label for="filter-subtasks">Subtareas</label>
-							<select id="filter-subtasks" bind:value={selectedSubtasks}>
-								<option value={null}>Todos ({tasks.length})</option>
-								<option value="con">Con subtareas ({withSubtasksCount})</option>
-								<option value="sin">Sin subtareas ({tasks.length - withSubtasksCount})</option>
-							</select>
-						</div>
-					</div>
-				</div>
-
-				<div class="filter-group filter-group-sort">
-					<span class="group-label">
-						<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-							<path stroke-linecap="round" stroke-linejoin="round" d="M3 7h11M3 12h7M3 17h4M17 4v16m0 0l-3.5-3.5M17 20l3.5-3.5" />
-						</svg>
-						Orden
-					</span>
-					<div class="group-row">
-						<div class="filter-field">
-							<label for="filter-sort">Fecha</label>
-							<select id="filter-sort" bind:value={sortOrder}>
-								<option value="desc">Más reciente primero</option>
-								<option value="asc">Más antiguo primero</option>
-							</select>
-						</div>
-					</div>
-				</div>
-			</div>
-
 			{#if filteredTasks.length === 0}
 				<p class="muted">No hay tareas con ese filtro.</p>
 			{/if}
@@ -266,6 +271,12 @@
 </div>
 
 <style>
+	.filters-card {
+		width: 100%;
+		padding: 1.25rem 1.5rem;
+		margin-bottom: 1.25rem;
+	}
+
 	.layout {
 		display: flex;
 		align-items: flex-start;
@@ -362,7 +373,6 @@
 		flex-wrap: wrap;
 		align-items: flex-start;
 		gap: 1.25rem;
-		margin-bottom: 1.25rem;
 	}
 
 	.filter-group {
