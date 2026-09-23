@@ -383,7 +383,7 @@
 <style>
 	.filters-card {
 		width: 100%;
-		padding: 1.25rem 1.5rem;
+		padding: 0.75rem 1.25rem;
 		margin-bottom: 1.25rem;
 	}
 
@@ -488,8 +488,8 @@
 	.filter-group {
 		display: flex;
 		flex-direction: column;
-		gap: 0.5rem;
-		padding: 0.75rem 1rem 0.85rem;
+		gap: 0.3rem;
+		padding: 0.45rem 1rem 0.55rem;
 		border-radius: 10px;
 		border-left: 3px solid transparent;
 	}
@@ -536,7 +536,7 @@
 	.filter-field {
 		display: flex;
 		flex-direction: column;
-		gap: 0.3rem;
+		gap: 0.2rem;
 	}
 
 	.filter-field label {
@@ -550,7 +550,7 @@
 	.filter-field select {
 		border: 1px solid var(--border);
 		border-radius: 8px;
-		padding: 0.45rem 2rem 0.45rem 0.7rem;
+		padding: 0.3rem 2rem 0.3rem 0.7rem;
 		font-size: 0.85rem;
 		color: var(--foreground);
 		background: var(--card);
@@ -574,7 +574,7 @@
 	.multi-select-trigger {
 		border: 1px solid var(--border);
 		border-radius: 8px;
-		padding: 0.45rem 2rem 0.45rem 0.7rem;
+		padding: 0.3rem 2rem 0.3rem 0.7rem;
 		font-size: 0.85rem;
 		color: var(--foreground);
 		background: var(--card);
