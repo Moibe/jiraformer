@@ -21,6 +21,7 @@
 	let projectMenuOpen = $state(false);
 	let projectMenuEl: HTMLElement | undefined = $state();
 	let selectedStatus = $state<string | null>(null);
+	let selectedType = $state<string | null>(null);
 	let selectedSubtasks = $state<'con' | 'sin' | null>(null);
 	let selectedUsercare = $state<'si' | 'no' | null>('no');
 	let sortOrder = $state<'desc' | 'asc'>('asc');
@@ -40,12 +41,16 @@
 	let statuses = $derived(
 		[...new Set(tasks.map((t) => t.status))].sort((a, b) => a.localeCompare(b))
 	);
+	let types = $derived(
+		[...new Set(tasks.map((t) => t.type))].sort((a, b) => a.localeCompare(b))
+	);
 	let filteredTasks = $derived(
 		tasks
 			.filter(
 				(t) =>
 					(selectedProjects.size === 0 || selectedProjects.has(t.project)) &&
 					(!selectedStatus || t.status === selectedStatus) &&
+					(!selectedType || t.type === selectedType) &&
 					(!selectedSubtasks ||
 						(selectedSubtasks === 'con' ? t.hasSubtasks : !t.hasSubtasks)) &&
 					(!selectedUsercare ||
@@ -80,6 +85,9 @@
 			);
 			if (selectedStatus && !tasks.some((t) => t.status === selectedStatus)) {
 				selectedStatus = null;
+			}
+			if (selectedType && !tasks.some((t) => t.type === selectedType)) {
+				selectedType = null;
 			}
 		} catch (e) {
 			error = e instanceof Error ? e.message : 'Error desconocido.';
@@ -237,6 +245,18 @@
 							{#each statuses as status (status)}
 								<option value={status}>
 									{status} ({tasks.filter((t) => t.status === status).length})
+								</option>
+							{/each}
+						</select>
+					</div>
+
+					<div class="filter-field">
+						<label for="filter-type">Tipo</label>
+						<select id="filter-type" bind:value={selectedType}>
+							<option value={null}>Todos ({tasks.length})</option>
+							{#each types as type (type)}
+								<option value={type}>
+									{type} ({tasks.filter((t) => t.type === type).length})
 								</option>
 							{/each}
 						</select>
