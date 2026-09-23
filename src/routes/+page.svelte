@@ -20,7 +20,7 @@
 	let selectedProjects = $state<Set<string>>(new Set(['ART -BROKER Seguros', 'NEXUS DOC IA']));
 	let projectMenuOpen = $state(false);
 	let projectMenuEl: HTMLElement | undefined = $state();
-	let selectedStatuses = $state<Set<string>>(new Set());
+	let selectedStatuses = $state<Set<string>>(new Set(['Hecho', 'HECHO', 'Listo', 'LISTO']));
 	let statusMenuOpen = $state(false);
 	let statusMenuEl: HTMLElement | undefined = $state();
 	let selectedType = $state<string | null>('Historia');
