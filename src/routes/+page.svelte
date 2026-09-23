@@ -23,7 +23,7 @@
 	let selectedStatus = $state<string | null>(null);
 	let selectedSubtasks = $state<'con' | 'sin' | null>(null);
 	let selectedUsercare = $state<'si' | 'no' | null>('no');
-	let sortOrder = $state<'desc' | 'asc'>('desc');
+	let sortOrder = $state<'desc' | 'asc'>('asc');
 
 	let flags = $state<Record<string, boolean>>({});
 
@@ -288,7 +288,7 @@
 		<div class="header-row">
 			<div>
 				<h1>Mis tareas</h1>
-				<p class="subtitle">Todo lo asignado a ti en Jira, más reciente primero.</p>
+				<p class="subtitle">Todo lo asignado a ti en Jira.</p>
 			</div>
 			<button class="btn-secondary" onclick={load} disabled={loading}>
 				{loading ? 'Cargando…' : 'Refrescar'}
