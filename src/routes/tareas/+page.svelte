@@ -17,7 +17,9 @@
 	let error = $state('');
 	let tasks = $state<Task[]>([]);
 	let site = $state('');
-	let selectedProject = $state<string | null>(null);
+	let selectedProjects = $state<Set<string>>(new Set());
+	let projectMenuOpen = $state(false);
+	let projectMenuEl: HTMLElement | undefined = $state();
 	let selectedStatus = $state<string | null>(null);
 	let selectedSubtasks = $state<'con' | 'sin' | null>(null);
 	let selectedUsercare = $state<'si' | 'no' | null>(null);
@@ -42,7 +44,7 @@
 		tasks
 			.filter(
 				(t) =>
-					(!selectedProject || t.project === selectedProject) &&
+					(selectedProjects.size === 0 || selectedProjects.has(t.project)) &&
 					(!selectedStatus || t.status === selectedStatus) &&
 					(!selectedSubtasks ||
 						(selectedSubtasks === 'con' ? t.hasSubtasks : !t.hasSubtasks)) &&
@@ -73,9 +75,9 @@
 			if (flagsRes.ok) {
 				flags = (await flagsRes.json()).flags;
 			}
-			if (selectedProject && !tasks.some((t) => t.project === selectedProject)) {
-				selectedProject = null;
-			}
+			selectedProjects = new Set(
+				[...selectedProjects].filter((p) => tasks.some((t) => t.project === p))
+			);
 			if (selectedStatus && !tasks.some((t) => t.status === selectedStatus)) {
 				selectedStatus = null;
 			}
@@ -84,6 +86,27 @@
 		} finally {
 			loading = false;
 		}
+	}
+
+	function toggleProject(project: string) {
+		const next = new Set(selectedProjects);
+		if (next.has(project)) next.delete(project);
+		else next.add(project);
+		selectedProjects = next;
+	}
+
+	function clearProjects() {
+		selectedProjects = new Set();
+	}
+
+	function handleWindowClick(e: MouseEvent) {
+		if (projectMenuOpen && projectMenuEl && !projectMenuEl.contains(e.target as Node)) {
+			projectMenuOpen = false;
+		}
+	}
+
+	function handleWindowKeydown(e: KeyboardEvent) {
+		if (e.key === 'Escape') projectMenuOpen = false;
 	}
 
 	async function toggleFlag(issueKey: string, checked: boolean) {
@@ -146,6 +169,8 @@
 	<title>Jiraformer · Tareas</title>
 </svelte:head>
 
+<svelte:window onclick={handleWindowClick} onkeydown={handleWindowKeydown} />
+
 {#if showFilters}
 	<div class="card filters-card">
 		<div class="filters">
@@ -158,15 +183,51 @@
 				</span>
 				<div class="group-row">
 					<div class="filter-field">
-						<label for="filter-project">Proyecto</label>
-						<select id="filter-project" bind:value={selectedProject}>
-							<option value={null}>Todos ({tasks.length})</option>
-							{#each projects as project (project)}
-								<option value={project}>
-									{project} ({tasks.filter((t) => t.project === project).length})
-								</option>
-							{/each}
-						</select>
+						<!-- svelte-ignore a11y_label_has_associated_control -->
+					<label id="filter-project-label">Proyecto</label>
+						<div class="multi-select" bind:this={projectMenuEl}>
+							<button
+								type="button"
+								class="multi-select-trigger"
+								aria-labelledby="filter-project-label"
+								onclick={() => (projectMenuOpen = !projectMenuOpen)}
+							>
+								{#if selectedProjects.size === 0}
+									Todos ({tasks.length})
+								{:else if selectedProjects.size === 1}
+									{[...selectedProjects][0]} ({tasks.filter(
+										(t) => t.project === [...selectedProjects][0]
+									).length})
+								{:else}
+									{selectedProjects.size} proyectos seleccionados
+								{/if}
+							</button>
+
+							{#if projectMenuOpen}
+								<div class="multi-select-panel">
+									<label class="multi-select-option">
+										<input
+											type="checkbox"
+											checked={selectedProjects.size === 0}
+											onchange={clearProjects}
+										/>
+										<span>Todos ({tasks.length})</span>
+									</label>
+									{#each projects as project (project)}
+										<label class="multi-select-option">
+											<input
+												type="checkbox"
+												checked={selectedProjects.has(project)}
+												onchange={() => toggleProject(project)}
+											/>
+											<span
+												>{project} ({tasks.filter((t) => t.project === project).length})</span
+											>
+										</label>
+									{/each}
+								</div>
+							{/if}
+						</div>
 					</div>
 
 					<div class="filter-field">
@@ -504,6 +565,76 @@
 	.filter-field select:focus {
 		outline: 2px solid var(--ring);
 		outline-offset: 1px;
+	}
+
+	.multi-select {
+		position: relative;
+	}
+
+	.multi-select-trigger {
+		border: 1px solid var(--border);
+		border-radius: 8px;
+		padding: 0.45rem 2rem 0.45rem 0.7rem;
+		font-size: 0.85rem;
+		color: var(--foreground);
+		background: var(--card);
+		min-width: 12rem;
+		max-width: 16rem;
+		text-align: left;
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2342526e' stroke-width='2'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+		background-repeat: no-repeat;
+		background-position: right 0.6rem center;
+		background-size: 1rem;
+	}
+
+	.multi-select-trigger:focus {
+		outline: 2px solid var(--ring);
+		outline-offset: 1px;
+	}
+
+	.multi-select-panel {
+		position: absolute;
+		top: calc(100% + 0.35rem);
+		left: 0;
+		z-index: 30;
+		min-width: 100%;
+		max-height: 16rem;
+		overflow-y: auto;
+		background: var(--card);
+		border: 1px solid var(--border);
+		border-radius: 8px;
+		box-shadow: 0 8px 24px rgba(23, 43, 77, 0.16);
+		padding: 0.4rem;
+		display: flex;
+		flex-direction: column;
+		gap: 0.1rem;
+	}
+
+	.multi-select-option {
+		display: flex;
+		align-items: center;
+		gap: 0.55rem;
+		padding: 0.4rem 0.5rem;
+		border-radius: 6px;
+		font-size: 0.85rem;
+		color: var(--foreground);
+		white-space: nowrap;
+		cursor: pointer;
+	}
+
+	.multi-select-option:hover {
+		background: var(--muted);
+	}
+
+	.multi-select-option input {
+		width: 1rem;
+		height: 1rem;
+		accent-color: var(--primary);
+		flex-shrink: 0;
+		cursor: pointer;
 	}
 
 	.task-list {
