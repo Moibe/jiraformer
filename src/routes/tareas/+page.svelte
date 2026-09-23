@@ -20,6 +20,7 @@
 	let selectedProject = $state<string | null>(null);
 	let selectedStatus = $state<string | null>(null);
 	let selectedSubtasks = $state<'con' | 'sin' | null>(null);
+	let selectedUsercare = $state<'si' | 'no' | null>(null);
 	let sortOrder = $state<'desc' | 'asc'>('desc');
 
 	let flags = $state<Record<string, boolean>>({});
@@ -44,7 +45,9 @@
 					(!selectedProject || t.project === selectedProject) &&
 					(!selectedStatus || t.status === selectedStatus) &&
 					(!selectedSubtasks ||
-						(selectedSubtasks === 'con' ? t.hasSubtasks : !t.hasSubtasks))
+						(selectedSubtasks === 'con' ? t.hasSubtasks : !t.hasSubtasks)) &&
+					(!selectedUsercare ||
+						(selectedUsercare === 'si' ? flags[t.key] : !flags[t.key]))
 			)
 			.sort((a, b) => {
 				const diff = new Date(a.updated).getTime() - new Date(b.updated).getTime();
@@ -52,6 +55,7 @@
 			})
 	);
 	let withSubtasksCount = $derived(tasks.filter((t) => t.hasSubtasks).length);
+	let withUsercareCount = $derived(tasks.filter((t) => flags[t.key]).length);
 	let showFilters = $derived(!loading && !error && tasks.length > 0);
 
 	async function load() {
@@ -183,6 +187,15 @@
 							<option value={null}>Todos ({tasks.length})</option>
 							<option value="con">Con subtareas ({withSubtasksCount})</option>
 							<option value="sin">Sin subtareas ({tasks.length - withSubtasksCount})</option>
+						</select>
+					</div>
+
+					<div class="filter-field">
+						<label for="filter-usercare">Usercare</label>
+						<select id="filter-usercare" bind:value={selectedUsercare}>
+							<option value={null}>Todos ({tasks.length})</option>
+							<option value="si">Subidas ({withUsercareCount})</option>
+							<option value="no">No subidas ({tasks.length - withUsercareCount})</option>
 						</select>
 					</div>
 				</div>
