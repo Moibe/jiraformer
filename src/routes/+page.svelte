@@ -22,7 +22,7 @@
 	let projectMenuEl: HTMLElement | undefined = $state();
 	let selectedStatus = $state<string | null>(null);
 	let selectedSubtasks = $state<'con' | 'sin' | null>(null);
-	let selectedUsercare = $state<'si' | 'no' | null>(null);
+	let selectedUsercare = $state<'si' | 'no' | null>('no');
 	let sortOrder = $state<'desc' | 'asc'>('desc');
 
 	let flags = $state<Record<string, boolean>>({});
