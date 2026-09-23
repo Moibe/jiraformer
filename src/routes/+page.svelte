@@ -20,7 +20,9 @@
 	let selectedProjects = $state<Set<string>>(new Set(['ART -BROKER Seguros', 'NEXUS DOC IA']));
 	let projectMenuOpen = $state(false);
 	let projectMenuEl: HTMLElement | undefined = $state();
-	let selectedStatus = $state<string | null>(null);
+	let selectedStatuses = $state<Set<string>>(new Set());
+	let statusMenuOpen = $state(false);
+	let statusMenuEl: HTMLElement | undefined = $state();
 	let selectedType = $state<string | null>('Historia');
 	let selectedSubtasks = $state<'con' | 'sin' | null>('con');
 	let selectedUsercare = $state<'si' | 'no' | null>('no');
@@ -49,7 +51,7 @@
 			.filter(
 				(t) =>
 					(selectedProjects.size === 0 || selectedProjects.has(t.project)) &&
-					(!selectedStatus || t.status === selectedStatus) &&
+					(selectedStatuses.size === 0 || selectedStatuses.has(t.status)) &&
 					(!selectedType || t.type === selectedType) &&
 					(!selectedSubtasks ||
 						(selectedSubtasks === 'con' ? t.hasSubtasks : !t.hasSubtasks)) &&
@@ -83,9 +85,9 @@
 			selectedProjects = new Set(
 				[...selectedProjects].filter((p) => tasks.some((t) => t.project === p))
 			);
-			if (selectedStatus && !tasks.some((t) => t.status === selectedStatus)) {
-				selectedStatus = null;
-			}
+			selectedStatuses = new Set(
+				[...selectedStatuses].filter((s) => tasks.some((t) => t.status === s))
+			);
 			if (selectedType && !tasks.some((t) => t.type === selectedType)) {
 				selectedType = null;
 			}
@@ -107,14 +109,32 @@
 		selectedProjects = new Set();
 	}
 
+	function toggleStatus(status: string) {
+		const next = new Set(selectedStatuses);
+		if (next.has(status)) next.delete(status);
+		else next.add(status);
+		selectedStatuses = next;
+	}
+
+	function clearStatuses() {
+		selectedStatuses = new Set();
+	}
+
 	function handleWindowClick(e: MouseEvent) {
-		if (projectMenuOpen && projectMenuEl && !projectMenuEl.contains(e.target as Node)) {
+		const target = e.target as Node;
+		if (projectMenuOpen && projectMenuEl && !projectMenuEl.contains(target)) {
 			projectMenuOpen = false;
+		}
+		if (statusMenuOpen && statusMenuEl && !statusMenuEl.contains(target)) {
+			statusMenuOpen = false;
 		}
 	}
 
 	function handleWindowKeydown(e: KeyboardEvent) {
-		if (e.key === 'Escape') projectMenuOpen = false;
+		if (e.key === 'Escape') {
+			projectMenuOpen = false;
+			statusMenuOpen = false;
+		}
 	}
 
 	async function toggleFlag(issueKey: string, checked: boolean) {
@@ -239,15 +259,49 @@
 					</div>
 
 					<div class="filter-field">
-						<label for="filter-status">Estado</label>
-						<select id="filter-status" bind:value={selectedStatus}>
-							<option value={null}>Todos ({tasks.length})</option>
-							{#each statuses as status (status)}
-								<option value={status}>
-									{status} ({tasks.filter((t) => t.status === status).length})
-								</option>
-							{/each}
-						</select>
+						<!-- svelte-ignore a11y_label_has_associated_control -->
+						<label id="filter-status-label">Estado</label>
+						<div class="multi-select" bind:this={statusMenuEl}>
+							<button
+								type="button"
+								class="multi-select-trigger"
+								aria-labelledby="filter-status-label"
+								onclick={() => (statusMenuOpen = !statusMenuOpen)}
+							>
+								{#if selectedStatuses.size === 0}
+									Todos ({tasks.length})
+								{:else if selectedStatuses.size === 1}
+									{[...selectedStatuses][0]} ({tasks.filter(
+										(t) => t.status === [...selectedStatuses][0]
+									).length})
+								{:else}
+									{selectedStatuses.size} estados seleccionados
+								{/if}
+							</button>
+
+							{#if statusMenuOpen}
+								<div class="multi-select-panel">
+									<label class="multi-select-option">
+										<input
+											type="checkbox"
+											checked={selectedStatuses.size === 0}
+											onchange={clearStatuses}
+										/>
+										<span>Todos ({tasks.length})</span>
+									</label>
+									{#each statuses as status (status)}
+										<label class="multi-select-option">
+											<input
+												type="checkbox"
+												checked={selectedStatuses.has(status)}
+												onchange={() => toggleStatus(status)}
+											/>
+											<span>{status} ({tasks.filter((t) => t.status === status).length})</span>
+										</label>
+									{/each}
+								</div>
+							{/if}
+						</div>
 					</div>
 
 					<div class="filter-field">
