@@ -15,6 +15,7 @@ type JiraIssue = {
 		issuetype: { name: string };
 		updated: string;
 		subtasks?: unknown[];
+		parent?: { key: string; fields?: { summary?: string } };
 	};
 };
 
@@ -37,7 +38,7 @@ async function fetchAllAssignedIssues(): Promise<JiraIssue[]> {
 				jql: 'assignee = currentUser() ORDER BY updated DESC',
 				maxResults: 100,
 				nextPageToken,
-				fields: ['summary', 'status', 'project', 'issuetype', 'updated', 'subtasks']
+				fields: ['summary', 'status', 'project', 'issuetype', 'updated', 'subtasks', 'parent']
 			})
 		});
 
@@ -72,7 +73,10 @@ export const GET: RequestHandler = async () => {
 			project: issue.fields.project?.name ?? '',
 			type: issue.fields.issuetype?.name ?? '',
 			updated: issue.fields.updated,
-			hasSubtasks: (issue.fields.subtasks?.length ?? 0) > 0
+			hasSubtasks: (issue.fields.subtasks?.length ?? 0) > 0,
+			parent: issue.fields.parent
+				? { key: issue.fields.parent.key, summary: issue.fields.parent.fields?.summary ?? '' }
+				: null
 		}))
 	});
 };

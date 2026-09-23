@@ -8,6 +8,7 @@
 		type: string;
 		updated: string;
 		hasSubtasks: boolean;
+		parent: { key: string; summary: string } | null;
 	};
 
 	type PanelSubtask = { key: string; summary: string };
@@ -251,6 +252,11 @@
 							<span class="summary">{task.summary}</span>
 							<span class="status {statusClass(task.statusCategory)}">{task.status}</span>
 							<span class="meta">{task.project} · {formatDate(task.updated)}</span>
+							{#if task.parent}
+								<span class="parent-info">
+									Principal: {task.parent.key} · {task.parent.summary}
+								</span>
+							{/if}
 						</button>
 					</li>
 				{/each}
@@ -579,6 +585,13 @@
 		grid-column: 2 / span 2;
 		font-size: 0.78rem;
 		color: var(--muted-foreground);
+	}
+
+	.parent-info {
+		grid-column: 2 / span 2;
+		font-size: 0.75rem;
+		color: var(--accent);
+		font-weight: 500;
 	}
 
 	.panel-header {
