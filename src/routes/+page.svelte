@@ -23,7 +23,9 @@
 	let selectedStatuses = $state<Set<string>>(new Set(['Hecho', 'HECHO', 'Listo', 'LISTO']));
 	let statusMenuOpen = $state(false);
 	let statusMenuEl: HTMLElement | undefined = $state();
-	let selectedType = $state<string | null>('Historia');
+	let selectedTypes = $state<Set<string>>(new Set(['Historia']));
+	let typeMenuOpen = $state(false);
+	let typeMenuEl: HTMLElement | undefined = $state();
 	let selectedSubtasks = $state<'con' | 'sin' | null>('con');
 	let selectedUsercare = $state<'si' | 'no' | null>('no');
 	let sortOrder = $state<'desc' | 'asc'>('asc');
@@ -52,7 +54,7 @@
 				(t) =>
 					(selectedProjects.size === 0 || selectedProjects.has(t.project)) &&
 					(selectedStatuses.size === 0 || selectedStatuses.has(t.status)) &&
-					(!selectedType || t.type === selectedType) &&
+					(selectedTypes.size === 0 || selectedTypes.has(t.type)) &&
 					(!selectedSubtasks ||
 						(selectedSubtasks === 'con' ? t.hasSubtasks : !t.hasSubtasks)) &&
 					(!selectedUsercare ||
@@ -88,9 +90,9 @@
 			selectedStatuses = new Set(
 				[...selectedStatuses].filter((s) => tasks.some((t) => t.status === s))
 			);
-			if (selectedType && !tasks.some((t) => t.type === selectedType)) {
-				selectedType = null;
-			}
+			selectedTypes = new Set(
+				[...selectedTypes].filter((ty) => tasks.some((t) => t.type === ty))
+			);
 		} catch (e) {
 			error = e instanceof Error ? e.message : 'Error desconocido.';
 		} finally {
@@ -120,6 +122,17 @@
 		selectedStatuses = new Set();
 	}
 
+	function toggleType(type: string) {
+		const next = new Set(selectedTypes);
+		if (next.has(type)) next.delete(type);
+		else next.add(type);
+		selectedTypes = next;
+	}
+
+	function clearTypes() {
+		selectedTypes = new Set();
+	}
+
 	function handleWindowClick(e: MouseEvent) {
 		const target = e.target as Node;
 		if (projectMenuOpen && projectMenuEl && !projectMenuEl.contains(target)) {
@@ -128,12 +141,16 @@
 		if (statusMenuOpen && statusMenuEl && !statusMenuEl.contains(target)) {
 			statusMenuOpen = false;
 		}
+		if (typeMenuOpen && typeMenuEl && !typeMenuEl.contains(target)) {
+			typeMenuOpen = false;
+		}
 	}
 
 	function handleWindowKeydown(e: KeyboardEvent) {
 		if (e.key === 'Escape') {
 			projectMenuOpen = false;
 			statusMenuOpen = false;
+			typeMenuOpen = false;
 		}
 	}
 
@@ -305,15 +322,49 @@
 					</div>
 
 					<div class="filter-field">
-						<label for="filter-type">Tipo</label>
-						<select id="filter-type" bind:value={selectedType}>
-							<option value={null}>Todos ({tasks.length})</option>
-							{#each types as type (type)}
-								<option value={type}>
-									{type} ({tasks.filter((t) => t.type === type).length})
-								</option>
-							{/each}
-						</select>
+						<!-- svelte-ignore a11y_label_has_associated_control -->
+						<label id="filter-type-label">Tipo</label>
+						<div class="multi-select" bind:this={typeMenuEl}>
+							<button
+								type="button"
+								class="multi-select-trigger"
+								aria-labelledby="filter-type-label"
+								onclick={() => (typeMenuOpen = !typeMenuOpen)}
+							>
+								{#if selectedTypes.size === 0}
+									Todos ({tasks.length})
+								{:else if selectedTypes.size === 1}
+									{[...selectedTypes][0]} ({tasks.filter(
+										(t) => t.type === [...selectedTypes][0]
+									).length})
+								{:else}
+									{selectedTypes.size} tipos seleccionados
+								{/if}
+							</button>
+
+							{#if typeMenuOpen}
+								<div class="multi-select-panel">
+									<label class="multi-select-option">
+										<input
+											type="checkbox"
+											checked={selectedTypes.size === 0}
+											onchange={clearTypes}
+										/>
+										<span>Todos ({tasks.length})</span>
+									</label>
+									{#each types as type (type)}
+										<label class="multi-select-option">
+											<input
+												type="checkbox"
+												checked={selectedTypes.has(type)}
+												onchange={() => toggleType(type)}
+											/>
+											<span>{type} ({tasks.filter((t) => t.type === type).length})</span>
+										</label>
+									{/each}
+								</div>
+							{/if}
+						</div>
 					</div>
 
 					<div class="filter-field">
