@@ -18,20 +18,20 @@
 				<path
 					stroke-linecap="round"
 					stroke-linejoin="round"
-					d="M9 5h6M9 5a2 2 0 012-2h0a2 2 0 012 2m-4 0a2 2 0 00-2 2v0a2 2 0 002 2h4a2 2 0 002-2v0a2 2 0 00-2-2M5 9v10a2 2 0 002 2h10a2 2 0 002-2V9M9 13h6M9 17h6"
-				/>
-			</svg>
-			<span>Generar texto</span>
-		</a>
-		<a href="/tareas" class="nav-item" class:active={page.url.pathname === '/tareas'}>
-			<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
-				<path
-					stroke-linecap="round"
-					stroke-linejoin="round"
 					d="M9 6h11M9 12h11M9 18h11M4 6h.01M4 12h.01M4 18h.01"
 				/>
 			</svg>
 			<span>Tareas</span>
+		</a>
+		<a href="/generar" class="nav-item" class:active={page.url.pathname === '/generar'}>
+			<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+				<path
+					stroke-linecap="round"
+					stroke-linejoin="round"
+					d="M9 5h6M9 5a2 2 0 012-2h0a2 2 0 012 2m-4 0a2 2 0 00-2 2v0a2 2 0 002 2h4a2 2 0 002-2v0a2 2 0 00-2-2M5 9v10a2 2 0 002 2h10a2 2 0 002-2V9M9 13h6M9 17h6"
+				/>
+			</svg>
+			<span>Generar texto</span>
 		</a>
 	</nav>
 </header>
