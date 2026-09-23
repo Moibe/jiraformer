@@ -21,7 +21,7 @@
 	let projectMenuOpen = $state(false);
 	let projectMenuEl: HTMLElement | undefined = $state();
 	let selectedStatus = $state<string | null>(null);
-	let selectedType = $state<string | null>(null);
+	let selectedType = $state<string | null>('Historia');
 	let selectedSubtasks = $state<'con' | 'sin' | null>(null);
 	let selectedUsercare = $state<'si' | 'no' | null>('no');
 	let sortOrder = $state<'desc' | 'asc'>('asc');
