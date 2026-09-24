@@ -23,7 +23,7 @@
 	let selectedStatuses = $state<Set<string>>(new Set(['Hecho', 'HECHO', 'Listo', 'LISTO']));
 	let statusMenuOpen = $state(false);
 	let statusMenuEl: HTMLElement | undefined = $state();
-	let selectedTypes = $state<Set<string>>(new Set(['Historia']));
+	let selectedTypes = $state<Set<string>>(new Set(['Historia', 'Tarea']));
 	let typeMenuOpen = $state(false);
 	let typeMenuEl: HTMLElement | undefined = $state();
 	let selectedSubtasks = $state<'con' | 'sin' | null>('con');
