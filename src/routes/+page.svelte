@@ -39,6 +39,10 @@
 	let panelText = $state('');
 	let panelCopied = $state(false);
 
+	let usercareSubject = $state('');
+	let usercareText = $state('');
+	let usercareCopied = $state(false);
+
 	let projects = $derived(
 		[...new Set(tasks.map((t) => t.project))].sort((a, b) => a.localeCompare(b))
 	);
@@ -207,6 +211,14 @@
 		await navigator.clipboard.writeText(panelText);
 		panelCopied = true;
 		setTimeout(() => (panelCopied = false), 2000);
+	}
+
+	async function copiarUsercare() {
+		const combined = `${usercareSubject}\n\n${usercareText}`.trim();
+		if (!combined) return;
+		await navigator.clipboard.writeText(combined);
+		usercareCopied = true;
+		setTimeout(() => (usercareCopied = false), 2000);
 	}
 </script>
 
@@ -503,6 +515,30 @@
 			{/if}
 		{/if}
 	</div>
+
+	<div class="card usercare-card">
+		<h2>Ticket Usercare</h2>
+
+		<label for="usercare-subject">Asunto</label>
+		<input
+			id="usercare-subject"
+			type="text"
+			bind:value={usercareSubject}
+			placeholder="Asunto del ticket"
+		/>
+
+		<label for="usercare-text">Texto</label>
+		<textarea
+			id="usercare-text"
+			bind:value={usercareText}
+			rows="12"
+			placeholder="Descripción del ticket"
+		></textarea>
+
+		<button class="btn-primary" onclick={copiarUsercare}>
+			{usercareCopied ? 'Copiado ✓' : 'Copiar'}
+		</button>
+	</div>
 </div>
 
 <style>
@@ -538,6 +574,54 @@
 		max-width: 24rem;
 		position: sticky;
 		top: 6.25rem;
+	}
+
+	.usercare-card {
+		flex: 1 1 20rem;
+		max-width: 24rem;
+		display: flex;
+		flex-direction: column;
+		gap: 0.4rem;
+		position: sticky;
+		top: 6.25rem;
+	}
+
+	.usercare-card h2 {
+		font-size: 1rem;
+		font-weight: 600;
+		margin: 0 0 0.5rem;
+	}
+
+	.usercare-card label {
+		font-size: 0.8rem;
+		font-weight: 600;
+		color: var(--muted-foreground);
+	}
+
+	.usercare-card input,
+	.usercare-card textarea {
+		border: 1px solid var(--input);
+		border-radius: 8px;
+		padding: 0.6rem 0.75rem;
+		font-size: 0.9rem;
+		color: var(--foreground);
+		background: #fff;
+		font-family: inherit;
+	}
+
+	.usercare-card textarea {
+		resize: vertical;
+	}
+
+	.usercare-card input:focus,
+	.usercare-card textarea:focus {
+		outline: 2px solid var(--ring);
+		outline-offset: 1px;
+	}
+
+	.usercare-card .btn-primary {
+		align-self: flex-start;
+		margin-top: 0.3rem;
 	}
 
 	.header-row {
