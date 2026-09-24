@@ -175,12 +175,23 @@
 	let starredTasks = $state<Record<string, boolean>>({});
 	let starredSubtasks = $state<Record<string, boolean>>({});
 
-	function toggleTaskStar(key: string) {
-		starredTasks = { ...starredTasks, [key]: !starredTasks[key] };
+	async function toggleTaskStar(task: Task) {
+		const isNowStarred = !starredTasks[task.key];
+		starredTasks = { ...starredTasks, [task.key]: isNowStarred };
+		if (!isNowStarred) return;
+
+		usercareSubject = task.summary;
+		await seleccionar(task);
+		usercareText = panelText;
 	}
 
-	function toggleSubtaskStar(key: string) {
-		starredSubtasks = { ...starredSubtasks, [key]: !starredSubtasks[key] };
+	function toggleSubtaskStar(st: PanelSubtask) {
+		const isNowStarred = !starredSubtasks[st.key];
+		starredSubtasks = { ...starredSubtasks, [st.key]: isNowStarred };
+		if (!isNowStarred) return;
+
+		usercareSubject = st.summary;
+		usercareText = st.summary;
 	}
 
 	$effect(() => {
@@ -488,7 +499,7 @@
 							title="Marcar con estrella"
 							onclick={(e) => {
 								e.stopPropagation();
-								toggleTaskStar(task.key);
+								toggleTaskStar(task);
 							}}
 						>
 							{@render starIcon(!!starredTasks[task.key])}
@@ -547,7 +558,7 @@
 								type="button"
 								class="star-btn"
 								title="Marcar con estrella"
-								onclick={() => toggleSubtaskStar(st.key)}
+								onclick={() => toggleSubtaskStar(st)}
 							>
 								{@render starIcon(!!starredSubtasks[st.key])}
 							</button>
