@@ -172,6 +172,17 @@
 		}
 	}
 
+	let starredTasks = $state<Record<string, boolean>>({});
+	let starredSubtasks = $state<Record<string, boolean>>({});
+
+	function toggleTaskStar(key: string) {
+		starredTasks = { ...starredTasks, [key]: !starredTasks[key] };
+	}
+
+	function toggleSubtaskStar(key: string) {
+		starredSubtasks = { ...starredSubtasks, [key]: !starredSubtasks[key] };
+	}
+
 	$effect(() => {
 		load();
 	});
@@ -227,6 +238,23 @@
 </svelte:head>
 
 <svelte:window onclick={handleWindowClick} onkeydown={handleWindowKeydown} />
+
+{#snippet starIcon(active: boolean)}
+	<svg
+		class="star-icon"
+		class:filled={active}
+		viewBox="0 0 24 24"
+		fill={active ? 'currentColor' : 'none'}
+		stroke="currentColor"
+		stroke-width="1.5"
+	>
+		<path
+			stroke-linecap="round"
+			stroke-linejoin="round"
+			d="M11.48 3.499a.562.562 0 011.04 0l2.125 5.111c.093.223.303.377.543.399l5.518.442c.598.048.84.795.383 1.183l-4.204 3.602a.563.563 0 00-.182.557l1.285 5.385c.14.583-.495 1.043-1.007.731l-4.725-2.885a.562.562 0 00-.586 0l-4.725 2.885c-.512.312-1.147-.148-1.007-.731l1.286-5.385a.562.562 0 00-.182-.557l-4.204-3.602c-.458-.388-.215-1.135.383-1.183l5.518-.442a.563.563 0 00.543-.399l2.125-5.111z"
+		/>
+	</svg>
+{/snippet}
 
 {#if showFilters}
 	<div class="card filters-card">
@@ -455,6 +483,17 @@
 							onchange={(e) => toggleFlag(task.key, e.currentTarget.checked)}
 						/>
 						<button
+							type="button"
+							class="star-btn"
+							title="Marcar con estrella"
+							onclick={(e) => {
+								e.stopPropagation();
+								toggleTaskStar(task.key);
+							}}
+						>
+							{@render starIcon(!!starredTasks[task.key])}
+						</button>
+						<button
 							class="task-row"
 							class:selected={selectedTask?.key === task.key}
 							onclick={() => seleccionar(task)}
@@ -504,8 +543,18 @@
 				<ul class="subtask-list">
 					{#each panelSubtasks as st (st.key)}
 						<li>
-							<span class="key">{st.key}</span>
-							<span class="summary">{st.summary}</span>
+							<button
+								type="button"
+								class="star-btn"
+								title="Marcar con estrella"
+								onclick={() => toggleSubtaskStar(st.key)}
+							>
+								{@render starIcon(!!starredSubtasks[st.key])}
+							</button>
+							<div class="subtask-info">
+								<span class="key">{st.key}</span>
+								<span class="summary">{st.summary}</span>
+							</div>
 						</li>
 					{/each}
 				</ul>
@@ -869,6 +918,34 @@
 		cursor: pointer;
 	}
 
+	.star-btn {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		flex-shrink: 0;
+		color: var(--muted-foreground);
+		transition:
+			color 0.15s ease,
+			transform 0.1s ease;
+	}
+
+	.star-btn:hover {
+		color: #f5a623;
+	}
+
+	.star-btn:active {
+		transform: scale(0.88);
+	}
+
+	.star-icon {
+		width: 1.15rem;
+		height: 1.15rem;
+	}
+
+	.star-icon.filled {
+		color: #f5a623;
+	}
+
 	.task-row {
 		display: grid;
 		grid-template-columns: 5rem 1fr auto;
@@ -982,14 +1059,21 @@
 
 	.subtask-list li {
 		display: flex;
-		flex-direction: column;
-		gap: 0.15rem;
+		align-items: flex-start;
+		gap: 0.5rem;
 		padding-bottom: 0.6rem;
 		border-bottom: 1px solid var(--border);
 	}
 
 	.subtask-list li:last-child {
 		border-bottom: none;
+	}
+
+	.subtask-info {
+		display: flex;
+		flex-direction: column;
+		gap: 0.15rem;
+		min-width: 0;
 	}
 
 	.subtask-list .key {
