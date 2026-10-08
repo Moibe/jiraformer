@@ -31,6 +31,7 @@
 	let sortOrder = $state<'desc' | 'asc'>('asc');
 
 	let flags = $state<Record<string, boolean>>({});
+	let lastCheckedKey = $state<string | null>(null);
 
 	let selectedTask = $state<Task | null>(null);
 	let panelLoading = $state(false);
@@ -160,6 +161,11 @@
 
 	async function toggleFlag(issueKey: string, checked: boolean) {
 		flags = { ...flags, [issueKey]: checked };
+		if (checked) {
+			lastCheckedKey = issueKey;
+		} else if (lastCheckedKey === issueKey) {
+			lastCheckedKey = null;
+		}
 		try {
 			const res = await fetch('/api/tasks/flags', {
 				method: 'PUT',
@@ -169,6 +175,9 @@
 			if (!res.ok) throw new Error();
 		} catch {
 			flags = { ...flags, [issueKey]: !checked };
+			if (lastCheckedKey === issueKey) {
+				lastCheckedKey = null;
+			}
 		}
 	}
 
@@ -488,6 +497,7 @@
 						<input
 							type="checkbox"
 							class="usercare-check"
+							class:last-checked={lastCheckedKey === task.key}
 							title="¿Subida a Usercare?"
 							checked={flags[task.key] ?? false}
 							onclick={(e) => e.stopPropagation()}
@@ -942,6 +952,10 @@
 		height: 1.05rem;
 		accent-color: var(--primary);
 		cursor: pointer;
+	}
+
+	.usercare-check.last-checked {
+		accent-color: #006644;
 	}
 
 	.star-btn {
