@@ -955,7 +955,7 @@
 	}
 
 	.usercare-check.last-checked {
-		accent-color: #006644;
+		accent-color: #4ade80;
 	}
 
 	.star-btn {
