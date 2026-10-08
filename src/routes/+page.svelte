@@ -956,6 +956,10 @@
 
 	.usercare-check.last-checked {
 		accent-color: #4ade80;
+		transform: scale(1.25);
+		outline: 2px solid #4ade80;
+		outline-offset: 2px;
+		border-radius: 3px;
 	}
 
 	.star-btn {
