@@ -463,7 +463,7 @@
 	<div class="card list-card">
 		<div class="header-row">
 			<div>
-				<h1>Mis tareas</h1>
+				<h1>Mis tareas <span class="result-count">{filteredTasks.length}</span></h1>
 				<p class="subtitle">Todo lo asignado a ti en Jira.</p>
 			</div>
 			<button class="btn-secondary" onclick={load} disabled={loading}>
@@ -696,6 +696,21 @@
 		font-size: 1.375rem;
 		font-weight: 600;
 		margin: 0 0 0.3rem;
+	}
+
+	.result-count {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		min-width: 1.6rem;
+		padding: 0.1rem 0.5rem;
+		margin-left: 0.4rem;
+		border-radius: 999px;
+		background: var(--muted);
+		color: var(--muted-foreground);
+		font-size: 0.85rem;
+		font-weight: 700;
+		vertical-align: middle;
 	}
 
 	.subtitle {
