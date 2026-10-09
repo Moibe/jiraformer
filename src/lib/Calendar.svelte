@@ -116,10 +116,7 @@
 
 <style>
 	.calendar-card {
-		flex: 1 1 17rem;
-		max-width: 19rem;
-		position: sticky;
-		top: 6.25rem;
+		flex-shrink: 0;
 		background: var(--card);
 		color: var(--card-foreground);
 		border: 1px solid var(--border);

@@ -588,31 +588,33 @@
 		{/if}
 	</div>
 
-	<div class="card usercare-card">
-		<h2>Ticket Usercare</h2>
+	<div class="side-column">
+		<Calendar />
 
-		<label for="usercare-subject">Asunto</label>
-		<input
-			id="usercare-subject"
-			type="text"
-			bind:value={usercareSubject}
-			placeholder="Asunto del ticket"
-		/>
+		<div class="card usercare-card">
+			<h2>Ticket Usercare</h2>
 
-		<label for="usercare-text">Texto</label>
-		<textarea
-			id="usercare-text"
-			bind:value={usercareText}
-			rows="12"
-			placeholder="Descripción del ticket"
-		></textarea>
+			<label for="usercare-subject">Asunto</label>
+			<input
+				id="usercare-subject"
+				type="text"
+				bind:value={usercareSubject}
+				placeholder="Asunto del ticket"
+			/>
 
-		<button class="btn-primary" onclick={copiarUsercare}>
-			{usercareCopied ? 'Copiado ✓' : 'Copiar'}
-		</button>
+			<label for="usercare-text">Texto</label>
+			<textarea
+				id="usercare-text"
+				bind:value={usercareText}
+				rows="12"
+				placeholder="Descripción del ticket"
+			></textarea>
+
+			<button class="btn-primary" onclick={copiarUsercare}>
+				{usercareCopied ? 'Copiado ✓' : 'Copiar'}
+			</button>
+		</div>
 	</div>
-
-	<Calendar />
 </div>
 
 <style>
@@ -650,14 +652,23 @@
 		top: 6.25rem;
 	}
 
-	.usercare-card {
+	.side-column {
 		flex: 1 1 20rem;
 		max-width: 24rem;
 		display: flex;
 		flex-direction: column;
-		gap: 0.4rem;
+		gap: 1.25rem;
 		position: sticky;
 		top: 6.25rem;
+		max-height: calc(100vh - 7rem);
+		overflow-y: auto;
+	}
+
+	.usercare-card {
+		display: flex;
+		flex-direction: column;
+		flex-shrink: 0;
+		gap: 0.4rem;
 	}
 
 	.usercare-card h2 {
