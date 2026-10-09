@@ -15,6 +15,13 @@
       "when": 1790117387063,
       "tag": "0001_legal_otto_octavius",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1791525866545,
+      "tag": "0002_red_squadron_sinister",
+      "breakpoints": true
     }
   ]
 }

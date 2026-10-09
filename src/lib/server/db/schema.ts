@@ -10,6 +10,13 @@ export const generations = sqliteTable('generations', {
 		.$defaultFn(() => new Date())
 });
 
+export const calendarChecks = sqliteTable('calendar_checks', {
+	date: text('date').primaryKey(),
+	createdAt: integer('created_at', { mode: 'timestamp' })
+		.notNull()
+		.$defaultFn(() => new Date())
+});
+
 export const taskFlags = sqliteTable('task_flags', {
 	issueKey: text('issue_key').primaryKey(),
 	sentToUsercare: integer('sent_to_usercare', { mode: 'boolean' }).notNull().default(false),

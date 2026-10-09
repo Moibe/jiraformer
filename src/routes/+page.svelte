@@ -1,4 +1,6 @@
 <script lang="ts">
+	import Calendar from '$lib/Calendar.svelte';
+
 	type Task = {
 		key: string;
 		summary: string;
@@ -609,6 +611,8 @@
 			{usercareCopied ? 'Copiado ✓' : 'Copiar'}
 		</button>
 	</div>
+
+	<Calendar />
 </div>
 
 <style>
