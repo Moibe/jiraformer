@@ -496,15 +496,17 @@
 			<ul class="task-list">
 				{#each filteredTasks as task (task.key)}
 					<li class="task-item">
-						<input
-							type="checkbox"
-							class="usercare-check"
-							class:last-checked={lastCheckedKey === task.key}
-							title="¿Subida a Usercare?"
-							checked={flags[task.key] ?? false}
-							onclick={(e) => e.stopPropagation()}
-							onchange={(e) => toggleFlag(task.key, e.currentTarget.checked)}
-						/>
+						<label class="usercare-label" title="¿Subida a Usercare?">
+							<span class="uc-text">UC</span>
+							<input
+								type="checkbox"
+								class="usercare-check"
+								class:last-checked={lastCheckedKey === task.key}
+								checked={flags[task.key] ?? false}
+								onclick={(e) => e.stopPropagation()}
+								onchange={(e) => toggleFlag(task.key, e.currentTarget.checked)}
+							/>
+						</label>
 						<button
 							type="button"
 							class="star-btn"
@@ -959,6 +961,21 @@
 		display: flex;
 		align-items: center;
 		gap: 0.6rem;
+	}
+
+	.usercare-label {
+		display: flex;
+		align-items: center;
+		gap: 0.3rem;
+		flex-shrink: 0;
+		cursor: pointer;
+	}
+
+	.uc-text {
+		font-size: 0.72rem;
+		font-weight: 700;
+		letter-spacing: 0.02em;
+		color: var(--muted-foreground);
 	}
 
 	.usercare-check {
