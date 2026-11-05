@@ -19,7 +19,7 @@
 	let error = $state('');
 	let tasks = $state<Task[]>([]);
 	let site = $state('');
-	let selectedProjects = $state<Set<string>>(new Set(['ART -BROKER Seguros', 'NEXUS DOC IA']));
+	let selectedProjects = $state<Set<string>>(new Set(['ART -BROKER Seguros', 'BIBLIORATUM']));
 	let projectMenuOpen = $state(false);
 	let projectMenuEl: HTMLElement | undefined = $state();
 	let selectedStatuses = $state<Set<string>>(new Set(['Hecho', 'HECHO', 'Listo', 'LISTO']));
