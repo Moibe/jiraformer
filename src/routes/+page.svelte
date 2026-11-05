@@ -28,7 +28,7 @@
 	let selectedTypes = $state<Set<string>>(new Set(['Historia', 'Tarea', 'Error']));
 	let typeMenuOpen = $state(false);
 	let typeMenuEl: HTMLElement | undefined = $state();
-	let selectedSubtasks = $state<'con' | 'sin' | null>('con');
+	let selectedSubtasks = $state<'con' | 'sin' | null>(null);
 	let selectedUsercare = $state<'si' | 'no' | null>(null);
 	let sortOrder = $state<'desc' | 'asc'>('asc');
 
