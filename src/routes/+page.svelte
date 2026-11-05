@@ -29,7 +29,7 @@
 	let typeMenuOpen = $state(false);
 	let typeMenuEl: HTMLElement | undefined = $state();
 	let selectedSubtasks = $state<'con' | 'sin' | null>(null);
-	let selectedUsercare = $state<'si' | 'no' | null>(null);
+	let selectedUsercare = $state<'si' | 'no' | null>('no');
 	let sortOrder = $state<'desc' | 'asc'>('asc');
 
 	let flags = $state<Record<string, boolean>>({});
