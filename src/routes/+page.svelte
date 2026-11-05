@@ -626,11 +626,15 @@
 		margin-bottom: 1.25rem;
 	}
 
+	/* 7:4:4 equals 42rem / 24rem / 24rem at full width. The three columns
+	   shrink together instead of wrapping, so the calendar and the Usercare
+	   ticket stay on the right in a half-screen window. */
 	.layout {
-		display: flex;
-		align-items: flex-start;
+		display: grid;
+		grid-template-columns: minmax(0, 7fr) minmax(0, 4fr) minmax(0, 4fr);
+		align-items: start;
 		gap: 1.25rem;
-		flex-wrap: wrap;
+		max-width: 92.5rem;
 	}
 
 	.card {
@@ -642,21 +646,12 @@
 		padding: 2rem;
 	}
 
-	.list-card {
-		flex: 1 1 32rem;
-		max-width: 42rem;
-	}
-
 	.panel-card {
-		flex: 1 1 20rem;
-		max-width: 24rem;
 		position: sticky;
 		top: 6.25rem;
 	}
 
 	.side-column {
-		flex: 1 1 20rem;
-		max-width: 24rem;
 		display: flex;
 		flex-direction: column;
 		gap: 1.25rem;
@@ -949,6 +944,7 @@
 	}
 
 	.task-list {
+		container: tasks / inline-size;
 		list-style: none;
 		margin: 0;
 		padding: 0;
@@ -1105,9 +1101,16 @@
 		align-items: flex-start;
 		justify-content: space-between;
 		gap: 0.75rem;
+		flex-wrap: wrap;
 		margin-bottom: 1.25rem;
 		padding-bottom: 1rem;
 		border-bottom: 1px solid var(--border);
+	}
+
+	/* In a narrow panel the "Abrir en Jira" button drops below the title. */
+	.panel-header > div {
+		flex: 1 1 10rem;
+		min-width: 0;
 	}
 
 	.panel-key {
@@ -1160,5 +1163,57 @@
 		font-size: 0.85rem;
 		font-weight: 500;
 		color: var(--foreground);
+	}
+
+	@media (max-width: 1280px) {
+		.layout .card {
+			padding: 1.25rem;
+		}
+	}
+
+	/* Narrow task list: key and status on top, the title gets the full width. */
+	@container tasks (max-width: 30rem) {
+		.task-row {
+			grid-template-columns: minmax(0, 1fr) auto;
+		}
+
+		.task-row .key {
+			grid-row: 1;
+			grid-column: 1;
+		}
+
+		.task-row .status {
+			grid-row: 1;
+			grid-column: 2;
+		}
+
+		.task-row .summary {
+			grid-row: 2;
+			grid-column: 1 / -1;
+		}
+
+		.task-row .meta {
+			grid-row: 3;
+			grid-column: 1 / -1;
+		}
+
+		.task-row .parent-info {
+			grid-row: 4;
+			grid-column: 1 / -1;
+		}
+	}
+
+	/* Too narrow for three columns: stack everything, nothing sticky. */
+	@media (max-width: 900px) {
+		.layout {
+			grid-template-columns: minmax(0, 1fr);
+		}
+
+		.panel-card,
+		.side-column {
+			position: static;
+			max-height: none;
+			overflow: visible;
+		}
 	}
 </style>
